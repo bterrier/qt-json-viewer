@@ -1,5 +1,21 @@
+/****************************************************************************
+**
+** This program is free software: you can redistribute it and/or modify it
+** under the terms of the GNU General Public License as published by the Free
+** Software Foundation; either version 3 of the License, or (at your option)
+** any later version.
+**
+** This program is distributed in the hope that it will be useful, but
+** WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+** or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+** for more details.
+**
+** You should have received a copy of the GNU General Public License along
+** with this program. If not, see https://www.gnu.org/licenses/.
+**
+****************************************************************************/
+
 #include "jsonmodel.h"
-#include <vector>
 
 #include <QJsonArray>
 #include <QJsonObject>
@@ -110,7 +126,6 @@ public:
 
 	void parse() const
 	{
-		qDebug() << Q_FUNC_INFO << this;
 		if (m_children.count() == m_childCount)
 			return;
 
@@ -245,13 +260,11 @@ bool JsonModel::hasChildren(const QModelIndex &parent) const
 
 bool JsonModel::canFetchMore(const QModelIndex &parent) const
 {
-	qDebug() << Q_FUNC_INFO << parent;
 	bool result = false;
 	auto node = reinterpret_cast<JsonNode *>(parent.internalPointer());
 	if (node) {
 		result =  node->canParse();
 	}
-	qDebug() << result;
 	return result;
 }
 
@@ -269,7 +282,6 @@ void JsonModel::fetchMore(const QModelIndex &parent)
 
 QVariant JsonModel::data(const QModelIndex &index, int role) const
 {
-	qDebug() << Q_FUNC_INFO << index << role;
 	if (!index.isValid())
 		return QVariant();
 
