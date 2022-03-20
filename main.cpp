@@ -21,8 +21,13 @@
 
 int main(int argc, char *argv[])
 {
+	QCoreApplication::setApplicationName("qt-json-viewer");
+	QGuiApplication::setApplicationDisplayName("Qt JSON Viewer");
+
 	QApplication a(argc, argv);
+
 	MainWindow w;
 	w.show();
+
 	return a.exec();
 }

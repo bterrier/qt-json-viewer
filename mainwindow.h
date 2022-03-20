@@ -19,6 +19,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+
 class JsonModel;
 
 QT_BEGIN_NAMESPACE
@@ -33,8 +34,11 @@ public:
 	MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
 
+public slots:
+	void open(const QString &filepath);
+
 private slots:
-	void on_actionOpen_triggered();
+	void onActionOpenTriggered();
 
 private:
 	Ui::MainWindow *ui;

@@ -19,12 +19,13 @@
 #include "./ui_mainwindow.h"
 
 #include <QFileDialog>
-
-#include "jsonmodel.h"
-
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMessageBox>
+#include <QStandardPaths>
+
+#include "jsonmodel.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -35,24 +36,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 	ui->treeView->setModel(m_model);
 
-	QJsonDocument doc = QJsonDocument::fromJson(R"(
-{
-"a": "foo",
-"b": "bar",
-"c": [
-	null,
- 2.0,
-false,
-"Hello, World"
-],
-"d": "bar",
-"e": 3.14
-}
-)");
-	if (doc.isArray())
-		m_model->setJson(doc.array());
-	else if (doc.isObject())
-		m_model->setJson(doc.object());
+	connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpenTriggered);
+	connect(ui->actionQuit, &QAction::triggered, this, &MainWindow::close);
+	connect(ui->actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
 }
 
 MainWindow::~MainWindow()
@@ -60,17 +46,15 @@ MainWindow::~MainWindow()
 	delete ui;
 }
 
-
-void MainWindow::on_actionOpen_triggered()
+void MainWindow::open(const QString &filepath)
 {
-	auto path = QFileDialog::getOpenFileName(this, "Open...");
-	if (path.isEmpty())
-		return;
-
-	QFile file(path);
+	QFile file(filepath);
 
 	qDebug() << "Opening file...";
 	if (!file.open(QFile::ReadOnly)) {
+		QMessageBox::critical(this,
+		                      tr("Failed to open file!"),
+		                      file.errorString());
 		return;
 	}
 	qDebug() << "File opened";
@@ -80,12 +64,37 @@ void MainWindow::on_actionOpen_triggered()
 	file.close();
 
 	qDebug() << "Parsing...";
-	auto doc = QJsonDocument::fromJson(data);
+	QJsonParseError jsonError;
+	auto doc = QJsonDocument::fromJson(data, &jsonError);
+
+	if (jsonError.error != QJsonParseError::NoError) {
+
+		QMessageBox::critical(this,
+		                      tr("Failed to parse file!"),
+		                      jsonError.errorString());
+		return;
+	}
+
 	qDebug() << "Done";
 	if (doc.isArray())
 		m_model->setJson(doc.array());
 	else if (doc.isObject())
 		m_model->setJson(doc.object());
 
+	ui->treeView->setEnabled(true);
+	setWindowFilePath(filepath);
+}
+
+
+void MainWindow::onActionOpenTriggered()
+{
+	auto path = QFileDialog::getOpenFileName(this,
+	                                         tr("Open..."),
+	                                         QStandardPaths::writableLocation(QStandardPaths::HomeLocation),
+	                                         "JSON (*.json);;All files (*)");
+	if (path.isEmpty())
+		return;
+
+	open(path);
 }
 
